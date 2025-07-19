@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherNow - Real-Time Weather</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #6b48ff, #00ddeb);
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        input[type="text"]:focus {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.02);
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            background: #ff6b6b;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #ff8787;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .weather-info {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+            opacity: 0;
+            animation: slideIn 0.5s ease forwards 0.5s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .weather-info h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .weather-info p {
+            margin: 0.5rem 0;
+        }
+
+        .error {
+            color: #ff6b6b;
+            font-size: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .weather-icon {
+            width: 100px;
+            height: 100px;
+            margin: 1rem auto;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WeatherNow</h1>
+        <div class="input-group">
+            <input type="text" id="cityInput" placeholder="Enter city name (e.g., London)">
+            <button onclick="getWeather()">Get Weather</button>
+        </div>
+        <div class="weather-info" id="weatherInfo">
+            <img id="weatherIcon" class="weather-icon" src="" alt="Weather Icon" style="display: none;">
+            <h2 id="cityName"></h2>
+            <p id="temperature"></p>
+            <p id="condition"></p>
+            <p id="airQuality"></p>
+        </div>
+        <p class="error" id="errorMessage">City not found. Please try again.</p>
+    </div>
+
+    <script>
+        const API_KEY = 'd9f7ff16bd3647c38d1110753251907';
+        const weatherInfo = document.getElementById('weatherInfo');
+        const errorMessage = document.getElementById('errorMessage');
+        const cityInput = document.getElementById('cityInput');
+        const cityName = document.getElementById('cityName');
+        const temperature = document.getElementById('temperature');
+        const condition = document.getElementById('condition');
+        const airQuality = document.getElementById('airQuality');
+        const weatherIcon = document.getElementById('weatherIcon');
+
+        async function getWeather() {
+            const city = cityInput.value.trim();
+            if (!city) {
+                showError('Please enter a city name.');
+                return;
+            }
+
+            const url = `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}&aqi=yes`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('City not found');
+                }
+                const data = await response.json();
+
+                // Update UI with weather data
+                cityName.textContent = `${data.location.name}, ${data.location.country}`;
+                temperature.textContent = `Temperature: ${data.current.temp_c}°C / ${data.current.temp_f}°F`;
+                condition.textContent = `Condition: ${data.current.condition.text}`;
+                airQuality.textContent = `Air Quality (AQI): ${data.current.air_quality['us-epa-index']}`;
+                weatherIcon.src = `https:${data.current.condition.icon}`;
+                weatherIcon.style.display = 'block';
+
+                weatherInfo.style.opacity = '1';
+                errorMessage.style.display = 'none';
+            } catch (error) {
+                showError('City not found or API error. Please try again.');
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            weatherInfo.style.opacity = '0';
+            weatherIcon.style.display = 'none';
+        }
+
+        // Allow Enter key to trigger weather fetch
+        cityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                getWeather();
+            }
+        });
+    </script>
+</body>
+</html>
