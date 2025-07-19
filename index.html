@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -179,7 +180,7 @@
                 return;
             }
 
-            const url = `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}&aqi=yes`;
+            const url = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}&aqi=yes`;
 
             try {
                 const response = await fetch(url);
@@ -219,3 +220,4 @@
     </script>
 </body>
 </html>
+```
